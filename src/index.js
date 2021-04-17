@@ -2,7 +2,7 @@ const fs = require("fs");
 const Discord = require("discord.js");
 var ffmpeg = require('ffmpeg');
 
-const Bot = new Discord.Client();
+const Bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION']});
 const Config = require("./../config/config.js");
 const prefix = Config.prefix;
 const token = Config.token;
@@ -151,12 +151,33 @@ Bot.on("ready", () => {
   Bot.user.setActivity(Config.activity);
 });
 
-//Bot.on("guildMemberAdd", async member => {
-//  member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso`)
-//  Bot.channels.cache.get('710491445391523971').send(`Bienvenue sur le serveur ${member}!`)
-//  member.roles.add('712074657410580491');
-//});
+Bot.on("guildMemberAdd", member => {
+  console.log("verif")
+  member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso`)
+  Bot.channels.cache.get('710491445391523971').send(`Bienvenue sur le serveur ${member}!`)
+  member.roles.add('712074657410580491');
+});
 
+ /*******************************************
+    ************ SYSTEME DE TICKETS ************
+    *******************************************/
+Bot.on("messageReactionAdd", (reaction, user) => {
+    if (user.bot) return
+    if (reaction.emoji.name == "✅") {
+        reaction.message.channel.send('Tu as réagi : ✅');
+        reaction.message.guild.channels.create(`ticket de ${user.username}`, {
+            type: 'text',
+            parent: "772175302298173451",
+            permissionOverwrites: [{
+                id: reaction.message.guild.id,
+                deny: ['SEND_MESSAGES'],
+                allow: ['ADD_REACTIONS']
+            }]
+        }).then(channel_ticket => {
+            channel_ticket.send("Channel crée !")
+        })
+    }
+})
 
 Bot.on("message", message => {
   let args = message.content.substring(prefix.length).split(" ");
