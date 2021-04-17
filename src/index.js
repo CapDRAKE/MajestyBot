@@ -29,7 +29,13 @@ client.on("message", async (message) => {
       // as we registered the event above, no need to send a success message here
   }
   if(command === "stop"){
-    client.player.stop();
+    client.player.stop(message);
+  }
+  if(command === "skip"){
+    client.player.skip(message);
+  }
+  if(command === "pause"){
+    client.player.pause(message);
   }
 
 });
@@ -38,16 +44,16 @@ client.login(token);
 client.player
 
 // Send a message when something is added to the queue
-.on('trackAdd', (message, queue, track) => message.channel.send(`${track.title} has been added to the queue!`))
-.on('playlistAdd', (message, queue, playlist) => message.channel.send(`${playlist.title} has been added to the queue (${playlist.tracks.length} songs)!`))
+.on('trackAdd', (message, queue, track) => message.channel.send(`${track.title} a été ajouté à la file d'attente !`))
+.on('playlistAdd', (message, queue, playlist) => message.channel.send(`${playlist.title} a été ajouté à la file d'attente (${playlist.tracks.length} songs)!`))
 
 // Send messages to format search results
 .on('searchResults', (message, query, tracks) => {
 
     const embed = new Discord.MessageEmbed()
-    .setAuthor(`Here are your search results for ${query}!`)
+    .setAuthor(`Voici vos résultats de recherche pour ${query}!`)
     .setDescription(tracks.map((t, i) => `${i}. ${t.title}`))
-    .setFooter('Send the number of the song you want to play!')
+    .setFooter('Envoyez le numéro de la chanson que vous souhaitez écouter !')
     message.channel.send(embed);
 
 })
@@ -61,19 +67,19 @@ client.player
     message.channel.send(`Tu dois envoyer un numéro entre 1 et ${tracks.length}!`)
 
 })
-.on('searchCancel', (message, query, tracks) => message.channel.send('You did not provide a valid response... Please send the command again!'))
-.on('noResults', (message, query) => message.channel.send(`No results found on YouTube for ${query}!`))
+.on('searchCancel', (message, query, tracks) => message.channel.send('Vous avez fourni une mauvaise réponse ... Veuillez renvoyer la commande!'))
+.on('noResults', (message, query) => message.channel.send(`Aucun résultat trouvé sur YouTube pour ${query}!`))
 
 // Send a message when the music is stopped
-.on('queueEnd', (message, queue) => message.channel.send('Music stopped as there is no more music in the queue!'))
-.on('channelEmpty', (message, queue) => message.channel.send('Music stopped as there is no more member in the voice channel!'))
-.on('botDisconnect', (message) => message.channel.send('Music stopped as I have been disconnected from the channel!'))
+.on('queueEnd', (message, queue) => message.channel.send('La musique est arrêtée car il y a plus de musique dans la file!'))
+.on('channelEmpty', (message, queue) => message.channel.send('La musique a été coupée car personne ne se trouvait dans le channel!'))
+.on('botDisconnect', (message) => message.channel.send('La musique est arrêtée car ma personne a été déconnecté du channel!'))
 
 // Error handling
 .on('error', (error, message) => {
     switch(error){
         case 'NotPlaying':
-            message.channel.send('There is no music being played on this server!')
+            message.channel.send('Pas de musique en cours de lecture sur ce serveur!')
             break;
         case 'NotConnected':
             message.channel.send('Tu crois vraiment que je vois pas que tu es pas dans un vocal?')
@@ -130,6 +136,7 @@ function generateCommandParams(message) {
   return { user, args, guild, cmd };
 }
 
+
 Bot.on("ready", () => {
   try {
     loadCommands();
@@ -144,9 +151,15 @@ Bot.on("ready", () => {
   Bot.user.setActivity(Config.activity);
 });
 
+//Bot.on("guildMemberAdd", async member => {
+//  member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso`)
+//  Bot.channels.cache.get('710491445391523971').send(`Bienvenue sur le serveur ${member}!`)
+//  member.roles.add('712074657410580491');
+//});
+
+
 Bot.on("message", message => {
   let args = message.content.substring(prefix.length).split(" ");
-
   if (message.content.startsWith(Config.prefix)) {
     runCommand(message);
   }
