@@ -1,5 +1,7 @@
 const fs = require("fs");
 const Discord = require("discord.js");
+const ticketSystem = require('djs-ticketsystem');
+//const bdd = require("./bdd.json");
 var ffmpeg = require('ffmpeg');
 
 const Bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION']});
@@ -161,23 +163,33 @@ Bot.on("guildMemberAdd", member => {
  /*******************************************
     ************ SYSTEME DE TICKETS ************
     *******************************************/
-Bot.on("messageReactionAdd", (reaction, user) => {
-    if (user.bot) return
-    if (reaction.emoji.name == "✅") {
-        reaction.message.channel.send('Tu as réagi : ✅');
-        reaction.message.guild.channels.create(`ticket de ${user.username}`, {
-            type: 'text',
-            parent: "772175302298173451",
-            permissionOverwrites: [{
-                id: reaction.message.guild.id,
-                deny: ['SEND_MESSAGES'],
-                allow: ['ADD_REACTIONS']
-            }]
-        }).then(channel_ticket => {
-            channel_ticket.send("Channel crée !")
-        })
-    }
-})
+//Bot.on("messageReactionAdd", (reaction, user) => {
+  //nif (user.bot) return
+   // if (reaction.emoji.name == "✅" && reaction.message.guild.channels.get("772175744238616598")) {
+        //reaction.message.channel.send('Tu as réagi : ✅');
+       // reaction.message.guild.channels.create(`ticket de ${user.username}`, {
+            //type: 'text',
+           // parent: "772175302298173451",
+           // permissionOverwrites: [{
+               //id: reaction.message.guild.id,
+                //deny: ['SEND_MESSAGES', 'VIEW_CHANNEL'],
+                //allow: ['ADD_REACTIONS']},
+                //{
+               //id: user.id,
+              //  deny: [],
+            //    allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
+                //},
+                //{
+                  //id : reaction.message.guild.roles.get("690178116110647306"),
+                  //deny: [],
+                  //allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
+                
+          // }],
+        //}).then(channel_ticket => {
+      //      channel_ticket.send("Channel crée !")
+    //    })
+  //  }
+//})
 
 Bot.on("message", message => {
   let args = message.content.substring(prefix.length).split(" ");
@@ -186,5 +198,12 @@ Bot.on("message", message => {
   }
  
 });
+
+
+//function Savebdd() {
+//  fs.writeFile("./bdd.json", JSON.stringify(bdd, null, 4), (err) => {
+//      if (err) message.channel.send("Une erreur est survenue.");
+//  });
+//}
 
 Bot.login(token);
