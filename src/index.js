@@ -1,8 +1,9 @@
 const fs = require("fs");
 const Discord = require("discord.js");
 const ticketSystem = require('djs-ticketsystem');
-//const bdd = require("./bdd.json");
+const bdd = require("./bdd.json");
 var ffmpeg = require('ffmpeg');
+const {MessageEmbed} = require('discord.js')
 
 const Bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION']});
 const Config = require("./../config/config.js");
@@ -154,56 +155,147 @@ Bot.on("ready", () => {
 });
 
 Bot.on("guildMemberAdd", member => {
-  console.log("verif")
-  member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso`)
+  member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso \n Tu pourras y acheter un serveur, ou bien même prendre un serveur **totalement gratuit !**`)
   Bot.channels.cache.get('710491445391523971').send(`Bienvenue sur le serveur ${member}!`)
+  Bot.channels.cache.get('832552184914509854').send(`${member}`).then(msg => {
+    setTimeout(() => {
+        msg.delete()
+    }, 5)
+  });
   member.roles.add('712074657410580491');
 });
 
  /*******************************************
     ************ SYSTEME DE TICKETS ************
     *******************************************/
-//Bot.on("messageReactionAdd", (reaction, user) => {
-  //nif (user.bot) return
-   // if (reaction.emoji.name == "✅" && reaction.message.guild.channels.get("772175744238616598")) {
-        //reaction.message.channel.send('Tu as réagi : ✅');
-       // reaction.message.guild.channels.create(`ticket de ${user.username}`, {
-            //type: 'text',
-           // parent: "772175302298173451",
-           // permissionOverwrites: [{
-               //id: reaction.message.guild.id,
-                //deny: ['SEND_MESSAGES', 'VIEW_CHANNEL'],
-                //allow: ['ADD_REACTIONS']},
-                //{
-               //id: user.id,
-              //  deny: [],
-            //    allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
-                //},
-                //{
-                  //id : reaction.message.guild.roles.get("690178116110647306"),
-                  //deny: [],
-                  //allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
-                
-          // }],
-        //}).then(channel_ticket => {
-      //      channel_ticket.send("Channel crée !")
-    //    })
-  //  }
-//})
+Bot.on("messageReactionAdd", (reaction, user) => {
+  if (user.bot) return
+  let categoryId = "772175744238616598";
+  if (reaction.message.channel.id == '772175744238616598'){
+    if (reaction.emoji.name == "✅") {
+      reaction.users.remove(user.id);
+      //reaction.message.channel.send('Tu as réagi : ✅');
+      reaction.message.guild.channels.create(`ticket de ${user.username}`, {
+          type: 'text',
+          parent: "772175302298173451",
+          permissionOverwrites: [{
+             id: reaction.message.guild.id,
+              deny: ['SEND_MESSAGES', 'VIEW_CHANNEL'],
+              allow: ['ADD_REACTIONS']},
+              {
+             id: user.id,
+              deny: ['ADD_REACTIONS'],
+              allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']
+              },
+              {
+                id : '690178116110647306',
+                deny: ['ADD_REACTIONS'],
+                allow: ['SEND_MESSAGES', 'VIEW_CHANNEL', 'MANAGE_CHANNELS']
+              },
+              {
+                id : '706086670167965706',
+                deny: ['ADD_REACTIONS'],
+                allow: ['SEND_MESSAGES', 'VIEW_CHANNEL']             
+         }],
+      }).then(channel_ticket => {
+          channel_ticket.send(`Ticket ouvert ! @everyone ${user.username} a besoin d'aide !\n Seul un modérateur ou un admin peut supprimer ce ticket !`)
+          
+      })
+  }
+  }else{
+    return;
+  }
+})
+
+
+ /*************************************************************
+    ************ SYSTEME DE TICKETS PAR MP*********************
+    ***********************************************************/
+client.on("ready", async () => {
+  console.log(`${client.user.username} en ligne`);
+    client.user.setActivity(`Une question ? MP moi !`, {type: "PLAYING"});
+});
+
+client.on('message', async message => {
+if (message.author.bot) return;
+ if (message.channel.type === 'dm') {
+        let ticketOpenned = false;
+    
+        client.guilds.cache.get('846319572881113088').channels.cache.filter(c=>c.name.startsWith('ticket-')).forEach(c=>{
+            if(c.topic === message.author.id) ticketOpenned = true;
+        })
+        if (ticketOpenned) {
+            const channelTicket = await client.guilds.cache.get('846319572881113088').channels.cache.find(c=>c.topic===message.author.id)
+            channelTicket.send(`${message.author.tag}:\n${message.content?message.content:message.attachments.last().url}`)
+        }
+        else {
+            const channelTicket = await client.guilds.cache.get('846319572881113088').channels.create(`ticket-${message.author.username}`, {type: 'text', parent: "846319572881113088", reason: 'DM TICKET', topic: "Ticket Support"})
+                                                                                                                                           return channelTicket.send(`${message.author.tag}:\n${message.content}`)
+        }
+    }
+    if (message.channel.name.startsWith("ticket-")) {
+        console.log(message.channel.topic);
+        let user = await client.users.fetch(message.channel.topic);
+        user.send(`${message.author.tag}:\n${message.content?message.content:message.attachements.last().url}`)
+    }
+})
+
+Bot.on("voiceStateUpdate", async (oldState, newState) => {
+  const user = await Bot.users.fetch(newState.id);
+  const member = newState.guild.member(user);
+
+  if(!oldState.channel && newState.channel.id === '853763395248848986'){
+      const channel = await newState.guild.channels.create("Channel de " + user.tag, {
+          type: 'voice',
+          parent: newState.channel.parent,
+          permissionOverwrites: [{
+              id: '417991602171281418',
+              deny: 'CONNECT'
+          }, {
+              id: user.id,
+              allow: 'MANAGE_CHANNELS',
+          }
+          ]
+      });
+
+      member.voice.setChannel(channel);
+      voiceCollection.set(user.id, channel.id);
+
+  } else if(!newState.channel) {
+      if(oldState.channelID === voiceCollection.get(newState.id)) return oldState.channel.delete()
+  }
+})
+
+
 
 Bot.on("message", message => {
+  //  // anti-insulte
+  //let blacklisted = ["fdp","tg", "merde", "con", "connard", "connard", "enculé", "nique", "ptn", "putain"] // dans les crochets tu mets les mots que tu ne veux pas voir, séparé par des virugules.
+  //let foundText = false;
+
+  //for(var i in blacklisted) {
+    //if(message.content.toLocaleLowerCase().includes(blacklisted[i].toLowerCase())) foundText = true;
+  //}
+  //if(foundText) {
+    //message.delete()
+    //message.channel.send(`Comment tu parles jean-louis !!`) // Tu mets la phrase que tu veux, c'est quand  il a supprimé un mot.
+  //};
+  const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);
+        if (message.content.match(prefixMention)) {
+            return message.channel.send(`Quoi?`);
+        }      
+
   let args = message.content.substring(prefix.length).split(" ");
   if (message.content.startsWith(Config.prefix)) {
     runCommand(message);
-  }
- 
+  } 
 });
 
 
-//function Savebdd() {
-//  fs.writeFile("./bdd.json", JSON.stringify(bdd, null, 4), (err) => {
-//      if (err) message.channel.send("Une erreur est survenue.");
-//  });
-//}
+function Savebdd() {
+  fs.writeFile("./bdd.json", JSON.stringify(bdd, null, 4), (err) => {
+      if (err) message.channel.send("Une erreur est survenue.");
+  });
+}
 
 Bot.login(token);

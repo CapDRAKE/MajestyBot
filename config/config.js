@@ -5,8 +5,8 @@ global.Bot = Bot
 /******************************************************************************************
                Configuration of the Bot
 ******************************************************************************************/
-exports.prefix = "+"; //The Prefix
+exports.prefix = "+";
 
-exports.token = "";// Your Bot's Token goes here
+exports.token = "";
 
-exports.activity = "MajestyCraft" // Set Activity
+exports.activity = "MajestyCraft"
