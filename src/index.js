@@ -325,13 +325,13 @@ Bot.on("ready", () => {
 
 Bot.on("guildMemberAdd", member => {
   member.send(`Bienvenue sur le serveur ${member.user.username} !\n Tu recherches un hébergeur Minecraft de qualité? Rejoins Minestrator => https://minestrator.com/?partner=eus561rkso \n Tu pourras y acheter un serveur, ou bien même prendre un serveur **totalement gratuit !**`)
-  Bot.channels.cache.get('710491445391523971').send(`Bienvenue sur le serveur ${member}!`)
-  Bot.channels.cache.get('832552184914509854').send(`${member}`).then(msg => {
+  Bot.channels.cache.get('845229994309058571').send(`Bienvenue sur le serveur ${member}!`)
+  Bot.channels.cache.get('845233355629002772').send(`${member}`).then(msg => {
     setTimeout(() => {
         msg.delete()
     }, 5)
   });
-  member.roles.add('712074657410580491');
+  member.roles.add('845209018829504522');
 });
 
  /*******************************************
@@ -409,20 +409,18 @@ if (message.author.bot) return;
     }
 })
 
+///Rejoindre pour créer
 Bot.on("voiceStateUpdate", async (oldState, newState) => {
   const user = await Bot.users.fetch(newState.id);
   const member = newState.guild.member(user);
 
   if(!oldState.channel && newState.channel.id === '854296709143855134'){
-      const channel = await newState.guild.channels.create("Channel de " + user.tag, {
+      const channel = await newState.guild.channels.create(`🔊 • 𝑪𝒉𝒂𝒏𝒏𝒆𝒍 𝒅𝒆 ${user.username}`, {
           type: 'voice',
           parent: newState.channel.parent,
           permissionOverwrites: [{
-              id: '417991602171281418',
-              allow: 'CONNECT'
-          }, {
               id: user.id,
-              allow: 'MANAGE_CHANNELS',
+              allow: ['MANAGE_CHANNELS', 'MANAGE_ROLES', 'VIEW_CHANNEL']
           }
           ]
       });
@@ -435,15 +433,61 @@ Bot.on("voiceStateUpdate", async (oldState, newState) => {
   }
 })
 
+//Invites top
+client.on('message', message => {
+    if(message.content.startsWith(`${prefix}invites`)) {
+        const { guild } = message
+
+        guild.fetchInvites().then((invites) => {
+            const inviteCounter = {}
+            invites.forEach((invites) => {
+                const { uses, inviter } = invites
+                const { username, discriminator, id } = inviter
+
+                const name = `<@${id}>`
+
+                inviteCounter[name] = (inviteCounter[name] || 0) + uses
+            })
+
+            let replyText = 'Joueurs : '
+
+            const sortedInvites = Object.keys(inviteCounter).sort((a, b) => inviteCounter[b] - inviteCounter[a])
+
+            for (const invite of sortedInvites) {
+                const count = inviteCounter[invite]
+                replyText += `\n${invite} a invité ${count} personne(s)`
+            }
+            let embed = new Discord.MessageEmbed()
+                .setTitle('Classement des invitations :')
+                .setDescription(replyText)
+                .setColor('ORANGE')
+                .setTimestamp()
+            message.channel.send(embed)
+        })
+    }
+})
+
+
+////Anti-lien
+client.on("message" , async message => {
+    if(message.content.includes("discord.gg/") || message.content.includes("discordapp/invite") || message.content.includes("discordapp.io")) {
+  
+    message.delete()
+    message.reply(`Desolé, il est interdit de poster des lien dans ce serveur`).then(msg => {
+        setTimeout(() => {
+            msg.delete()
+        }, 5000)})
+    }
+})
+
 ////Anti-Spam 
 const usersSpamMap = new Map();
 //const bdd = require("./bdd.json");
 function Savebdd() {
   fs.writeFile("./bdd.json", JSON.stringify(bdd, null, 4), (err) => {
-      //if (err) message.channel.send("Une erreur est survenue.");
+      if (err) message.channel.send("Une erreur est survenue.");
   });
 }
-
 client.on('message', async message => {
   if (message.author.bot) return;
   if (usersSpamMap.has(message.author.id)) {
@@ -494,9 +538,13 @@ Bot.on("message", message => {
   }
   if(foundText) {
     message.delete()
-    message.channel.send(`Attention, ce type de langage n'est pas toléré ici.`) // Tu mets la phrase que tu veux, c'est quand  il a supprimé un mot.
+    message.channel.send(`Attention, ce type de langage n'est pas toléré ici.`).then(msg => {
+        setTimeout(() => {
+            msg.delete()
+        }, 5000)
+      });
   };
-  const prefixMention = new RegExp(`^<@!?${client.user}>( |)$`);
+  const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);
         if (message.content.match(prefixMention)) {
             return message.channel.send(`Quoi?`);
         }      
