@@ -11,6 +11,7 @@ const prefix = Config.prefix;
 const token = Config.token;
 const voiceCollection = new Discord.Collection();
 
+
 client = new Discord.Client({
   fetchAllMembers: false
 }),
@@ -63,13 +64,12 @@ client.on("message", async message => {
                 .setColor("ORANGE")
                 .setTitle('**MajestyMusic**')
                 .setDescription(`Je joue de la musique !`)
-                .setFooter('Profite de ta musique !', "https://cdn.discordapp.com/attachments/828238990443544626/828679113300508722/22-1.gif")
+                .setFooter('Profite de ta musique !', "https://cdn.discordapp.com/attachments/828238990443544626/828679113300508722/22-1.gif");
             const send_play = await message.channel.send({embed: embed, components: [pause, lister]}); // Envoie de l'embed et du bouton
             const filter = (button) => button.clicker.user.id == message.author.id; // Les boutons marche que pour l'auteur du message
             const collector = send_play.createButtonCollector(filter); // Création du collector de bouton
             collector.on('collect', b =>{
-                b.defer();
-
+                b.reply.defer();
                 // Fonction des actions
                 function paus(){ //Fonction pause
                     if(distube.isPaused(message)) return message.channel.send("ERREUR: La musique est déjà en pause.").then((file) =>{
@@ -99,6 +99,8 @@ client.on("message", async message => {
                     send_play.edit({embed: embedreprendre, components: [pause, lister]});
                     distube.resume(message);
                 }
+                
+                
                 function leave(){ //Fonction leave
                     const meVoiceChannel = message.guild.me.voice.channel;
                     if(!meVoiceChannel) return message.channel.send("Je ne suis pas dans la vocal !").then((file) =>{
@@ -259,17 +261,6 @@ client.on("message", async message => {
     };
 });
 
-
-
-
-
-
-
-const { Player } = require("discord-player");
-const player = new Player(client);
-client.player = player;
-
-
 global.Bot = Bot;
 
 Bot.commands = {};
@@ -282,7 +273,7 @@ function loadCommands() {
       let obj = {};
       obj[cmd.name] = cmd;
       Object.assign(Bot.commands, obj);
-      console.log(`✅ Loaded command ${file}`);
+      console.log(`✅ commande enregistrée ${file}`);
     });
 }
 
@@ -308,19 +299,17 @@ function generateCommandParams(message) {
   return { user, args, guild, cmd };
 }
 
-
 Bot.on("ready", () => {
   try {
     loadCommands();
     // console.log(Bot.commands)
-    console.log("Commands loaded successfully!");
+    console.log("Commandes chargées avec succès !");
   } catch (err) {
     throw err;
   }
-
-  console.log(`Connected to Discord as  ${Bot.user.tag}!`);
-
+  console.log(`Connecté à Discord en tant que  ${Bot.user.tag}!`);
   Bot.user.setActivity(Config.activity);
+  
 });
 
 Bot.on("guildMemberAdd", member => {
@@ -334,19 +323,86 @@ Bot.on("guildMemberAdd", member => {
   member.roles.add('845209018829504522');
 });
 
+Bot.on('messageDelete', async message => {
+        let mension = message.mentions.members.first()
+        if(!mension) return;
+        if(mension.id === message.author.id) return;
+        if(message.member.hasPermission('BAN_MEMBERS')) return;
+        const embed = new Discord.MessageEmbed().setTitle('Ghost Ping').setDescription(`${mension.user.username} a été ghost ping par <@${message.author.id}>`)
+        if(mension) {message.channel.send(embed)}
+});
+
+//Lock:
+client.on('message', async message => {
+    if (message.content.startsWith('+lock')){
+           if (!message.member.hasPermission('MANAGE_CHANNELS')) {
+   return message.channel.send("Vous n'avez pas les permissions")
+   }
+   const channel = message.mentions.channels.first()
+   if(!channel) return message.channel.send('Veuillez fournir un channel !')
+   channel.overwritePermissions([
+     {
+        id: message.guild.id,
+        deny : ['SEND_MESSAGES'],
+     },
+    ],);
+   const embed = new Discord.MessageEmbed()
+   .setTitle("Channel Updates")
+   .setDescription(`${channel} a été verouillé`)
+   .setColor("RANDOM");
+   await message.channel.send(embed);
+   message.delete();
+    }
+
+    //Unlock
+  if (message.content.startsWith('+unlock')){
+   if (!message.member.hasPermission('MANAGE_CHANNELS')) {
+   return message.channel.send("Vous n'avez pas les permissions")
+   }
+   const channels = message.mentions.channels.first()
+   if(!channels) return message.channel.send('Veuillez fournir un channel !')
+   channels.overwritePermissions([
+     {
+        id: message.guild.id,
+        allow : ['SEND_MESSAGES'],
+     },
+    ],);
+   const embed = new Discord.MessageEmbed()
+   .setTitle("Channel Updates")
+   .setDescription(`${channels} a été deverouillé`)
+   .setColor("RANDOM");
+   await message.channel.send(embed);
+   message.delete();      
+  }
+})
+
+Bot.on('messageDelete', message => {
+  const CHANNEL = '845240585128640512';
+  if (message.channel.type == 'text') {
+    const embed = new Discord.MessageEmbed()
+    .setTitle('Message supprimé')
+    .addField('Auteur', message.author.username)
+    .addField('Message', message.cleanContent)
+    .setThumbnail(message.author.avatarURL)
+    .setColor('0x00AAFF');
+    Bot.channels.cache.get('845240585128640512').send({ embed });
+  }
+});
+
+
  /*******************************************
     ************ SYSTEME DE TICKETS ************
     *******************************************/
 Bot.on("messageReactionAdd", (reaction, user) => {
   if (user.bot) return
-  let categoryId = "772175744238616598";
-  if (reaction.message.channel.id == '772175744238616598'){
+  let categoryId = "846321565926162433";
+  if (reaction.message.channel.id == '846321565926162433'){
     if (reaction.emoji.name == "✅") {
       reaction.users.remove(user.id);
       //reaction.message.channel.send('Tu as réagi : ✅');
       reaction.message.guild.channels.create(`ticket de ${user.username}`, {
           type: 'text',
-          parent: "772175302298173451",
+          parent: "846319572881113088",
           permissionOverwrites: [{
              id: reaction.message.guild.id,
               deny: ['SEND_MESSAGES', 'VIEW_CHANNEL'],
@@ -385,29 +441,29 @@ Bot.on("messageReactionAdd", (reaction, user) => {
 //    client.user.setActivity(`Une question ? MP moi !`, {type: "PLAYING"});
 //});
 
-client.on('message', async message => {
-if (message.author.bot) return;
- if (message.channel.type === 'dm') {
-        let ticketOpenned = false;
-    
-        client.guilds.cache.get('846319572881113088').channel.cache.filter(c=>c.name.startsWith('ticket-')).forEach(c=>{
-            if(c.topic === message.author.id) ticketOpenned = true;
-        })
-        if (ticketOpenned) {
-            const channelTicket = await client.guilds.cache.get('846319572881113088').channel.cache.find(c=>c.topic===message.author.id)
-            channelTicket.send(`${message.author.tag}:\n${message.content?message.content:message.attachments.last().url}`)
-        }
-        else {
-            const channelTicket = await client.guilds.cache.get('846319572881113088').channel.create(`ticket-${message.author.username}`, {type: 'text', parent: "846319572881113088", reason: 'DM TICKET', topic: "Ticket Support"})
-                                                                                                                                           return channelTicket.send(`${message.author.tag}:\n${message.content}`)
-        }
-    }
-    if (message.channel.name.startsWith("ticket-")) {
-        console.log(message.channel.topic);
-        let user = await client.users.fetch(message.channel.topic);
-        user.send(`${message.author.tag}:\n${message.content?message.content:message.attachements.last().url}`)
-    }
-})
+//client.on('message', async message => {
+//if (message.author.bot) return;
+// if (message.channel.type === 'dm') {
+//        let ticketOpenned = false;
+//    
+//        client.guilds.cache.get('846319572881113088').channel.cache.filter(c=>c.name.startsWith('ticket-')).forEach(c=>{
+//            if(c.topic === message.author.id) ticketOpenned = true;
+//        })
+//        if (ticketOpenned) {
+//            const channelTicket = await client.guilds.cache.get('846319572881113088').channel.cache.find(c=>c.topic===message.author.id)
+//            channelTicket.send(`${message.author.tag}:\n${message.content?message.content:message.attachments.last().url}`)
+//        }
+//        else {
+//            const channelTicket = await client.guilds.cache.get('846319572881113088').channel.create(`ticket-${message.author.username}`, //{type: 'text', parent: "846319572881113088", reason: 'DM TICKET', topic: "Ticket Support"})
+//return channelTicket.send(`${message.author.tag}:\n${message.content}`)
+//        }
+//    }
+//    if (message.channel.name.startsWith("ticket-")) {
+//        console.log(message.channel.topic);
+//        let user = await client.users.fetch(message.channel.topic);
+//        user.send(`${message.author.tag}:\n${message.content?message.content:message.attachements.last().url}`)
+//    }
+//})
 
 ///Rejoindre pour créer
 Bot.on("voiceStateUpdate", async (oldState, newState) => {
@@ -504,15 +560,14 @@ client.on('message', async message => {
         delete bdd["warn"][utilisateur.id]
         Savebdd();
         return message.guild.members.ban(utilisateur);
-
       } else {
         bdd["warn"][utilisateur.id]++
         Savebdd();
-        return message.channel.send(`${utilisateur} a maintenant ${bdd['warn'][utilisateur.id]} avertissements.`).then(msg => {
+        return message.channel.send(`${utilisateur} possède désormais ${bdd['warn'][utilisateur.id]} avertissements.`).then(msg => {
             setTimeout(() => {
                 msg.delete()
             }, 5000)
-          });
+        });
     }
     }
   }
@@ -526,6 +581,24 @@ client.on('message', async message => {
   }
 });
 
+/*const {AntiRaid} = require('discord-antiraid');
+
+const antiraid = new AntiRaid(client, {
+    rateLimit: 4,
+    time: 10000,
+    ban: false,
+    kick: true,
+    unrank: false,
+    exemptMembers: [],
+    exemptRoles: ["694904362438361140", "417992221275717645", "773975372046794812", "785953360293265468", "848569216835518464", "690178116110647306"],
+    exemptEvent: [],
+    reason: "RAID"
+});
+
+antiraid.on("punish", (member, reason, sanction) => {
+    member.guild.channels.cache.get("706143840481837057").send(`${member.user.username} a été kick pour tentative de raid.`)
+})*/
+
 
 
 Bot.on("message", message => {
@@ -537,22 +610,24 @@ Bot.on("message", message => {
     if(message.content.toLocaleLowerCase().includes(blacklisted[i].toLowerCase())) foundText = true;
   }
   if(foundText) {
-    message.delete()
-    message.channel.send(`Attention, ce type de langage n'est pas toléré ici.`).then(msg => {
+    if (!message.member.hasPermission('BAN_MEMBERS')){
+        message.delete()
+        message.channel.send(`Attention, ce type de langage n'est pas toléré ici.`).then(msg => {
         setTimeout(() => {
             msg.delete()
         }, 5000)
       });
-  };
-  const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);
-        if (message.content.match(prefixMention)) {
-            return message.channel.send(`Quoi?`);
-        }      
+    }
+  };    
 
   let args = message.content.substring(prefix.length).split(" ");
   if (message.content.startsWith(Config.prefix)) {
     runCommand(message);
   } 
+  const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);
+  if (message.content.match(prefixMention)) {
+      return message.channel.send(`Quoi?`);
+  }  
 });
 
 

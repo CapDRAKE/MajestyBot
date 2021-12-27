@@ -18,7 +18,7 @@ module.exports.command = {
         "Réagissez avec un emoji <pouce vers le haut> ou <pouce vers le bas> pour voter a la suggestion"
       )
       .setColor("RANDOM");
-    message.guild.channels.cache.get('826159906607333446').send(embed).then((messageReaction) => {
+    message.guild.channels.cache.get('845235245442924594').send(embed).then((messageReaction) => {
       messageReaction.react("👍");
       messageReaction.react("👎");
     });
