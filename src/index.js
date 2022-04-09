@@ -376,18 +376,18 @@ client.on('message', async message => {
   }
 })
 
-Bot.on('messageDelete', message => {
-  const CHANNEL = '845240585128640512';
-  if (message.channel.type == 'text') {
-    const embed = new Discord.MessageEmbed()
-    .setTitle('Message supprimé')
-    .addField('Auteur', message.author.username)
-    .addField('Message', message.cleanContent)
-    .setThumbnail(message.author.avatarURL)
-    .setColor('0x00AAFF');
-    Bot.channels.cache.get('845240585128640512').send({ embed });
-  }
-});
+//Bot.on('messageDelete', message => {
+//  const CHANNEL = '845240585128640512';
+//  if (message.channel.type == 'text') {
+//    const embed = new Discord.MessageEmbed()
+//    .setTitle('Message supprimé')
+//    .addField('Auteur', message.author)
+//    .addField('Message', message.cleanContent)
+//    .setThumbnail(message.author.avatarURL)
+//    .setColor('0x00AAFF');
+//    Bot.channels.cache.get('845240585128640512').send({ embed });
+//  }
+//});
 
 
  /*******************************************
