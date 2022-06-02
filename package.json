@@ -22,7 +22,7 @@
     "ffmpeg-static": "4.4.0",
     "fs": "0.0.1-security",
     "moment": "2.29.2",
-    "npm": "^7.23.0",
+    "npm": "^8.11.0",
     "spotify-url-info": "2.2.3"
   },
   "engines": {
